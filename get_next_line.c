@@ -26,14 +26,23 @@ the same FD.
 #include <sys/types.h>
 #include <sys/stat.h>
 
+int store_remaining_buffer(char *buff){
+	// static char static_buff[BUFF_SIZE + 1];
+}
+
 int set_new_line(char *buff, char **new_line){
 	//static char could be helpful for storing the data
 	//that appears after the new_line.
-	static char static_buff[BUFF_SIZE + 1];
 	char *new_line;
-	//if a new_line is set, return 1;
-
-	//otherwise, return 0;
+	char *new_line_pointer;
+	
+	new_line_pointer = ft_strchr(buff, '\n');
+	//if a new_line char is founded, set the whole new line,
+	//store the characters after the new line
+	//and return 1.
+	if(new_line_pointer){
+		return (1);
+	}
 	return (0);
 }
 
