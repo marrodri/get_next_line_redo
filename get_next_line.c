@@ -26,35 +26,65 @@ the same FD.
 #include <sys/types.h>
 #include <sys/stat.h>
 
-int store_remaining_buffer(char *buff){
-	// static char static_buff[BUFF_SIZE + 1];
+void concatenate_readed_buff(char *buff, int store_buff){
+	static char *static_str;
+	char *tmp_line;
+	char *concatenated_str;
+	
+
+	tmp_line = *new_line;
+	concatenated_str = ft_strjoin(tmp_line, buff);
+		
+	static_str;
+	return (0);
 }
 
-int set_new_line(char *buff, char **new_line){
+int set_new_line(char *buff, char **new_line, int readed_bytes){
 	//static char could be helpful for storing the data
 	//that appears after the new_line.
-	char *new_line;
 	char *new_line_pointer;
-	
+
 	new_line_pointer = ft_strchr(buff, '\n');
-	//if a new_line char is founded, set the whole new line,
-	//store the characters after the new line
-	//and return 1.
-	if(new_line_pointer){
+	if (new_line_pointer || readed_bytes <= 0){
+	// if (!*new_line){
+	// 	*new_line = buff;
+	// }
+
+	// new_line_pointer = ft_strchr(buff, '\n');
+	// tmp_line = *new_line;
+	// concatenated_str = ft_strjoin(tmp_line, buff);
+	
+		//if a new_line char is founded, set the whole new line,
+		//and return 1, indicating that a new line has been set. 
+		
 		return (1);
 	}
-	return (0);
+	else{
+		// if (!*new_line){
+		// 	*new_line = buff;
+		// }
+
+		// new_line_pointer = ft_strchr(buff, '\n');
+		// tmp_line = *new_line;
+		// concatenated_str = ft_strjoin(tmp_line, buff);
+		
+		//join both strings and store it on the new_line double pointer 
+		// variable.
+		return (0);
+	}
 }
 
 int get_next_line(const int fd, char **line){
 		int		readed_bytes;
-		char	*buff[BUFF_SIZE];
+		char	buff[BUFF_SIZE + 1];
 
 		readed_bytes = read(fd, buff, BUFF_SIZE);
 		//iterate the file until a new line is founded or
 		// the bytes has finished.
+		buff[BUFF_SIZE] = '\0';
 		while(readed_bytes > 0 && !set_new_line(buff, line)){
 			readed_bytes = read(fd, buff, BUFF_SIZE);
+			buff[BUFF_SIZE] = '\0';
 		}
 		// if there
 		if (readed_bytes == -1){
