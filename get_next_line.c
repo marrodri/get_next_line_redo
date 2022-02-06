@@ -37,6 +37,10 @@ void concatenate_readed_buff(char **new_line, char *buff, int store_buff){
 	}
 	tmp_line = *new_line;
 	concatenated_str = ft_strjoin(*new_line, buff);
+
+	//trim all the line breaks founded in this buff.
+	//if its null, then store nothing and move on.
+	ft_strtrim();
 	free(tmp_line);
 	*new_line = concatenated_str;
 
