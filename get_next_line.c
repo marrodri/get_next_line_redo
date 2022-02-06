@@ -26,17 +26,20 @@ the same FD.
 #include <sys/types.h>
 #include <sys/stat.h>
 
-void concatenate_readed_buff(char *buff, int store_buff){
-	static char *static_str;
+void concatenate_readed_buff(char **new_line, char *buff, int store_buff){
+	// static char *static_str;
 	char *tmp_line;
 	char *concatenated_str;
 	
-
+	if(!*new_line){
+		*new_line = ft_strdup(buff);
+		return ;
+	}
 	tmp_line = *new_line;
-	concatenated_str = ft_strjoin(tmp_line, buff);
-		
-	static_str;
-	return (0);
+	concatenated_str = ft_strjoin(*new_line, buff);
+	free(tmp_line);
+	*new_line = concatenated_str;
+
 }
 
 int set_new_line(char *buff, char **new_line, int readed_bytes){
@@ -46,30 +49,17 @@ int set_new_line(char *buff, char **new_line, int readed_bytes){
 
 	new_line_pointer = ft_strchr(buff, '\n');
 	if (new_line_pointer || readed_bytes <= 0){
-	// if (!*new_line){
-	// 	*new_line = buff;
-	// }
-
-	// new_line_pointer = ft_strchr(buff, '\n');
-	// tmp_line = *new_line;
-	// concatenated_str = ft_strjoin(tmp_line, buff);
-	
-		//if a new_line char is founded, set the whole new line,
-		//and return 1, indicating that a new line has been set. 
-		
+		// if a new_line char is founded, set the whole new line,
+		// and return 1, indicating that a new line has been set. 
+		printf("'iterating ...'\n");
+		concatenate_readed_buff(new_line, buff, 1);
 		return (1);
 	}
 	else{
-		// if (!*new_line){
-		// 	*new_line = buff;
-		// }
-
-		// new_line_pointer = ft_strchr(buff, '\n');
-		// tmp_line = *new_line;
-		// concatenated_str = ft_strjoin(tmp_line, buff);
-		
 		//join both strings and store it on the new_line double pointer 
 		// variable.
+		printf("'concatenating ...'\n");
+		concatenate_readed_buff(new_line, buff, 0);
 		return (0);
 	}
 }
@@ -77,21 +67,17 @@ int set_new_line(char *buff, char **new_line, int readed_bytes){
 int get_next_line(const int fd, char **line){
 		int		readed_bytes;
 		char	buff[BUFF_SIZE + 1];
+		// static char remained_buff[128][BUFF_SIZE + 1];
 
 		readed_bytes = read(fd, buff, BUFF_SIZE);
-		//iterate the file until a new line is founded or
-		// the bytes has finished.
 		buff[BUFF_SIZE] = '\0';
-		while(readed_bytes > 0 && !set_new_line(buff, line)){
+		while(readed_bytes >= 0 && !set_new_line(buff, line, readed_bytes)){
 			readed_bytes = read(fd, buff, BUFF_SIZE);
 			buff[BUFF_SIZE] = '\0';
 		}
-		// if there
 		if (readed_bytes == -1){
 			return (-1);
 		}
-		// printf("get_next |%s|, bytes:|%d|\n", buff, readed_bytes);
-		*line = buff;
 		if(!readed_bytes){
 			return (0);
 		}
@@ -100,13 +86,13 @@ int get_next_line(const int fd, char **line){
 
 int main(int argc, char **argv){
 	int fd;
-	char *line;
+	char *line = NULL;
 	fd= open(argv[1], O_RDONLY);
 	get_next_line(fd,&line);
 	printf("main |%s|\n", line);
-	free(line);
-	get_next_line(fd,&line);
-	printf("main |%s|\n", line);
-	free(line);
+	// free(line);
+	// get_next_line(fd,&line);
+	// printf("main |%s|\n", line);
+	// free(line);
 	return (0);
 }
