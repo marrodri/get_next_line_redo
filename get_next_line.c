@@ -26,87 +26,122 @@ the same FD.
 #include <sys/types.h>
 #include <sys/stat.h>
 
-void concatenate_readed_buff(char *buff, int store_buff){
-	static char *static_str;
+void concatenate_readed_buff(char **new_line, char *buff){
 	char *tmp_line;
 	char *concatenated_str;
 	
-
+	if(!*new_line){
+		*new_line = ft_strdup(buff);
+		return ;
+	}
 	tmp_line = *new_line;
-	concatenated_str = ft_strjoin(tmp_line, buff);
-		
-	static_str;
+	concatenated_str = ft_strjoin(*new_line, buff);
+
+	//trim all the line breaks founded in this buff.
+	//if its null, then store nothing and move on.
+	// ft_strtrim();
+	free(tmp_line);
+	*new_line = concatenated_str;
+}
+
+int ft_strissame(char *str, int c){
+	int i = 0;
+
+	while (str[i] == c && str[i]){
+
+		i++;
+	}
+	if (!str[i])
+		return (1);
 	return (0);
 }
 
-int set_new_line(char *buff, char **new_line, int readed_bytes){
-	//static char could be helpful for storing the data
-	//that appears after the new_line.
-	char *new_line_pointer;
+char *ft_strnotchr(const char *s, int c){
+	int	i;
 
-	new_line_pointer = ft_strchr(buff, '\n');
-	if (new_line_pointer || readed_bytes <= 0){
-	// if (!*new_line){
-	// 	*new_line = buff;
-	// }
-
-	// new_line_pointer = ft_strchr(buff, '\n');
-	// tmp_line = *new_line;
-	// concatenated_str = ft_strjoin(tmp_line, buff);
-	
-		//if a new_line char is founded, set the whole new line,
-		//and return 1, indicating that a new line has been set. 
-		
-		return (1);
+	i = 0;
+	while (s[i] == c && s[i])
+	{
+		i++;
 	}
-	else{
-		// if (!*new_line){
-		// 	*new_line = buff;
-		// }
-
-		// new_line_pointer = ft_strchr(buff, '\n');
-		// tmp_line = *new_line;
-		// concatenated_str = ft_strjoin(tmp_line, buff);
-		
-		//join both strings and store it on the new_line double pointer 
-		// variable.
-		return (0);
+	if (s[i] != c && s[i])
+	{
+		return ((char *)(&s[i]));
 	}
+	return (NULL);
 }
 
-int get_next_line(const int fd, char **line){
-		int		readed_bytes;
-		char	buff[BUFF_SIZE + 1];
+char *get_remaining_buff(char *buff,int readed_bytes, char *linebreak_pointer){
 
+	char	*remainder_buff;
+	char	*non_linebreak_pointer;
+	int		address_diff;
+	remainder_buff = NULL;
+	
+	if (ft_strissame(buff, '\n'))
+	{
+		ft_bzero(buff, readed_bytes);
+		return (NULL);
+	}
+	
+	// 'hello\n\n test'
+	//        0 123456
+	non_linebreak_pointer = ft_strnotchr(buff, '\n');
+	// address_diff = (non_linebreak_pointer) - (linebreak_pointer);
+	remainder_buff = ft_strdup(non_linebreak_pointer);
+	ft_bzero(buff, readed_bytes);
+	printf("address_diff |%d|\n", address_diff);
+	return (remainder_buff);
+}
+
+
+int get_next_line(const int fd, char **line)
+{
+		int			readed_bytes;
+		char		buff[BUFF_SIZE + 1];
+		static char	*stored_buff[128];
+		char		*linebreak_pointer;
+
+		linebreak_pointer = NULL;
 		readed_bytes = read(fd, buff, BUFF_SIZE);
-		//iterate the file until a new line is founded or
-		// the bytes has finished.
-		buff[BUFF_SIZE] = '\0';
-		while(readed_bytes > 0 && !set_new_line(buff, line)){
+		buff[readed_bytes] = '\0';
+		if(stored_buff[fd]){
+			*line = ft_strdup(stored_buff[fd]);
+			free(stored_buff[fd]);
+			stored_buff[fd] = NULL;
+		}
+		while (readed_bytes >= 0 && !linebreak_pointer) {
+			linebreak_pointer = ft_strchr(buff, '\n');
+			if (linebreak_pointer) {
+				//TODO BUG to fix:
+				//if linebreak appears at the beggining/middle of the string. Store the remaining buffer after the line break.
+				//if the line break shows at the very end, then concatenate and return NULL to the stored buffer.
+				stored_buff[fd] = get_remaining_buff(buff, readed_bytes, linebreak_pointer);
+				concatenate_readed_buff(line, buff);
+				printf("break\n");
+				break ;
+			}
+			concatenate_readed_buff(line, buff);
 			readed_bytes = read(fd, buff, BUFF_SIZE);
-			buff[BUFF_SIZE] = '\0';
+			buff[readed_bytes] = '\0';
 		}
-		// if there
-		if (readed_bytes == -1){
+		if (readed_bytes == -1)
 			return (-1);
-		}
-		// printf("get_next |%s|, bytes:|%d|\n", buff, readed_bytes);
-		*line = buff;
-		if(!readed_bytes){
+		if(!readed_bytes)
 			return (0);
-		}
 		return (1);
 }
 
 int main(int argc, char **argv){
 	int fd;
-	char *line;
-	fd= open(argv[1], O_RDONLY);
+	char *line = NULL;
+
+	fd = open(argv[1], O_RDONLY);
 	get_next_line(fd,&line);
 	printf("main |%s|\n", line);
 	free(line);
 	get_next_line(fd,&line);
 	printf("main |%s|\n", line);
-	free(line);
+	// free(line);
 	return (0);
 }
