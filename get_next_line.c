@@ -47,11 +47,13 @@ void concatenate_readed_buff(char **new_line, char *buff){
 int ft_strissame(char *str, int c){
 	int i = 0;
 
-	while (str[i] == c)
+	while (str[i] == c && str[i]){
+
 		i++;
+	}
 	if (!str[i])
-		return (0);
-	return (1);
+		return (1);
+	return (0);
 }
 
 char *ft_strnotchr(const char *s, int c){
@@ -80,34 +82,16 @@ char *get_remaining_buff(char *buff, char *linebreak_pointer){
 	{
 		return (NULL);
 	}
-
+	
 	non_linebreak_pointer = ft_strnotchr(buff, '\n');
 	// 'hello\n\n test'
 	//        0 123456
-	address_diff = (int)(non_linebreak_pointer) - (int)(linebreak_pointer);
-	
+	address_diff = (non_linebreak_pointer) - (linebreak_pointer);
+	ft_bzero(buff, 3);
+	printf("address_diff |%d|\n", address_diff);
 	return (remainder_buff);
 }
 
-int set_new_line(char *buff, char **new_line, int readed_bytes){
-	//static char could be helpful for storing the data
-	//that appears after the new_line.
-	char *new_line_pointer;
-
-	new_line_pointer = ft_strchr(buff, '\n');
-	if (new_line_pointer || readed_bytes <= 0){
-		// if a new_line char is founded, set the whole new line,
-		// and return 1, indicating that a new line has been set. 
-		concatenate_readed_buff(new_line, buff);
-		return (1);
-	}
-	else{
-		//join both strings and store it on the new_line double pointer 
-		// variable.
-		concatenate_readed_buff(new_line, buff);
-		return (0);
-	}
-}
 
 int get_next_line(const int fd, char **line)
 {
@@ -118,28 +102,29 @@ int get_next_line(const int fd, char **line)
 
 		linebreak_pointer = NULL;
 		readed_bytes = read(fd, buff, BUFF_SIZE);
-		buff[BUFF_SIZE] = '\0';
-		while(readed_bytes >= 0){
-			readed_bytes = read(fd, buff, BUFF_SIZE);
-			buff[BUFF_SIZE] = '\0';
+		buff[readed_bytes] = '\0';
+		if(stored_buff[fd]){
+			*line = ft_strdup(stored_buff[fd]);
+			free(stored_buff[fd]);
+			stored_buff[fd] = NULL;
+		}
+		while (readed_bytes >= 0 && !linebreak_pointer) {
 			linebreak_pointer = ft_strchr(buff, '\n');
-			if(linebreak_pointer){
-
-
-				if(stored_buff[fd]){
-					free(stored_buff[fd]);
-				}
+			if (linebreak_pointer) {
+				//then store the remaining buff after the line break from *line.
 				stored_buff[fd] = get_remaining_buff(buff, linebreak_pointer);
+				concatenate_readed_buff(line, buff);
+				printf("break\n");
 				break ;
 			}
 			concatenate_readed_buff(line, buff);
+			readed_bytes = read(fd, buff, BUFF_SIZE);
+			buff[readed_bytes] = '\0';
 		}
-		if (readed_bytes == -1){
+		if (readed_bytes == -1)
 			return (-1);
-		}
-		if(!readed_bytes){
+		if(!readed_bytes)
 			return (0);
-		}
 		return (1);
 }
 
