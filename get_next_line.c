@@ -113,7 +113,9 @@ int get_next_line(const int fd, char **line)
 		while (readed_bytes >= 0 && !linebreak_pointer) {
 			linebreak_pointer = ft_strchr(buff, '\n');
 			if (linebreak_pointer) {
-				//then store the remaining buff after the line break from *line.
+				//TODO BUG to fix:
+				//if linebreak appears at the beggining/middle of the string. Store the remaining buffer after the line break.
+				//if the line break shows at the very end, then concatenate and return NULL to the stored buffer.
 				stored_buff[fd] = get_remaining_buff(buff, readed_bytes, linebreak_pointer);
 				concatenate_readed_buff(line, buff);
 				printf("break\n");
