@@ -87,7 +87,7 @@ char *get_remaining_buff(char *buff,int readed_bytes, char *linebreak_pointer){
 	// 'hello\n\n test'
 	//        0 123456
 	non_linebreak_pointer = ft_strnotchr(buff, '\n');
-	// address_diff = (non_linebreak_pointer) - (linebreak_pointer);
+	address_diff = (non_linebreak_pointer) - (linebreak_pointer);
 	remainder_buff = ft_strdup(non_linebreak_pointer);
 	ft_bzero(buff, readed_bytes);
 	printf("address_diff |%d|\n", address_diff);
@@ -95,15 +95,43 @@ char *get_remaining_buff(char *buff,int readed_bytes, char *linebreak_pointer){
 }
 
 
+/*
+TODO: pseudocode.
+first concatenate the buff with the line.
+
+then with the newly concatenated line, iterate to check where
+to trim and return the remaining buff of the string, after the linebreak.
+
+if the string starts with a newline, keep the previous line as how it is,
+and just return the remainder of the buff.
+*/	
 char *set_newline(char *buff, char **line){
-	//TODO: pseudocode.
-	// first concatenate the buff with the line.
+	char	*remainder_buff;
+	char	*linebreak_pointer;
+	int		line_length;
+	int		linebreak_diff;
+	char	*tmp_line;
 
-	//then with the newly concatenated line, iterate to check where
-	// to trim and return the remaining buff of the string, after the linebreak.
-
-	//if the string starts with a newline, keep the previous line as how it is,
-	// and just return the remainder of the buff.
+	remainder_buff = NULL;
+	linebreak_pointer = NULL;
+	line_length = ft_strlen(*line);
+	concatenate_readed_buff(line, buff);
+	//new line concatenated, now its time to break it and store the rest of
+	// the buffer, after the line break.
+	linebreak_pointer = ft_strchr(*line, '\n');
+	linebreak_diff =  (int)linebreak_pointer - (int)*line;
+	prinf('linebreak_diff'); 
+	if(linebreak_pointer == 0){
+		//store the remainder of the linebreak and keep the original line
+		//as how it is!!
+	}
+	if(linebreak_diff == line_length){
+		//return null to the remainder buffer and 
+	}
+	else{
+		//return the remainder of the buff and update the line.
+	}
+	
 }
 
 int get_next_line(const int fd, char **line)
@@ -111,9 +139,7 @@ int get_next_line(const int fd, char **line)
 		int			readed_bytes;
 		char		buff[BUFF_SIZE + 1];
 		static char	*stored_buff[128];
-		char		*linebreak_pointer;
 
-		linebreak_pointer = NULL;
 		readed_bytes = read(fd, buff, BUFF_SIZE);
 		buff[readed_bytes] = '\0';
 		if(stored_buff[fd]){
@@ -121,14 +147,9 @@ int get_next_line(const int fd, char **line)
 			free(stored_buff[fd]);
 			stored_buff[fd] = NULL;
 		}
-		while (readed_bytes >= 0 && !linebreak_pointer) {
-			linebreak_pointer = ft_strchr(buff, '\n');
-			if (linebreak_pointer) {
-				//TODO BUG to fix:
-				//if linebreak appears at the beggining/middle of the string. Store the remaining buffer after the line break.
-				//if the line break shows at the very end, then concatenate and return NULL to the stored buffer.
-				stored_buff[fd] = get_remaining_buff(buff, readed_bytes, linebreak_pointer);
-				concatenate_readed_buff(line, buff);
+		while (readed_bytes > 0) {
+			if (ft_strchr(buff, '\n')) {
+				stored_buff[fd] = set_newline(buff, line);
 				printf("break\n");
 				break ;
 			}
