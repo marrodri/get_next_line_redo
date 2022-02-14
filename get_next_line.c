@@ -36,21 +36,16 @@ void concatenate_readed_buff(char **new_line, char *buff){
 	}
 	tmp_line = *new_line;
 	concatenated_str = ft_strjoin(*new_line, buff);
-
-	//trim all the line breaks founded in this buff.
-	//if its null, then store nothing and move on.
-	// ft_strtrim();
 	free(tmp_line);
 	*new_line = concatenated_str;
 }
 
 int ft_strissame(char *str, int c){
-	int i = 0;
+	int i;
 
-	while (str[i] == c && str[i]){
-
+	i = 0;
+	while (str[i] == c && str[i])
 		i++;
-	}
 	if (!str[i])
 		return (1);
 	return (0);
@@ -61,39 +56,11 @@ char *ft_strnotchr(const char *s, int c){
 
 	i = 0;
 	while (s[i] == c && s[i])
-	{
 		i++;
-	}
 	if (s[i] != c && s[i])
-	{
 		return ((char *)(&s[i]));
-	}
 	return (NULL);
 }
-
-char *get_remaining_buff(char *buff,int readed_bytes, char *linebreak_pointer){
-
-	char	*remainder_buff;
-	char	*non_linebreak_pointer;
-	int		address_diff;
-	remainder_buff = NULL;
-	
-	if (ft_strissame(buff, '\n'))
-	{
-		ft_bzero(buff, readed_bytes);
-		return (NULL);
-	}
-	
-	// 'hello\n\n test'
-	//        0 123456
-	non_linebreak_pointer = ft_strnotchr(buff, '\n');
-	address_diff = (non_linebreak_pointer) - (linebreak_pointer);
-	remainder_buff = ft_strdup(non_linebreak_pointer);
-	ft_bzero(buff, readed_bytes);
-	printf("address_diff |%d|\n", address_diff);
-	return (remainder_buff);
-}
-
 
 /*
 TODO: pseudocode.
@@ -105,33 +72,50 @@ to trim and return the remaining buff of the string, after the linebreak.
 if the string starts with a newline, keep the previous line as how it is,
 and just return the remainder of the buff.
 */	
-char *set_newline(char *buff, char **line){
+char *set_newline(char *buff, char **line)
+{
 	char	*remainder_buff;
 	char	*linebreak_pointer;
 	int		line_length;
 	int		linebreak_diff;
-	char	*tmp_line;
+	char	*prev_line;
+	char 	*concatenated_line;
 
 	remainder_buff = NULL;
 	linebreak_pointer = NULL;
-	line_length = ft_strlen(*line);
+	prev_line = ft_strdup(line);
 	concatenate_readed_buff(line, buff);
-	//new line concatenated, now its time to break it and store the rest of
-	// the buffer, after the line break.
-	linebreak_pointer = ft_strchr(*line, '\n');
-	linebreak_diff =  (int)linebreak_pointer - (int)*line;
-	prinf('linebreak_diff'); 
-	if(linebreak_pointer == 0){
-		//store the remainder of the linebreak and keep the original line
-		//as how it is!!
+	concatenated_line = line;
+	// line_length = ft_strlen(concatenated_line);
+	linebreak_pointer = ft_strchr(concatenated_line, '\n');
+	linebreak_diff =  (int)linebreak_pointer - (int)concatenated_line;
+	prinf("linebreak_diff |%d|\n", linebreak_diff);
+	if(linebreak_diff < 0){
+		
 	}
-	if(linebreak_diff == line_length){
-		//return null to the remainder buffer and 
+	if(linebreak_diff == 0)
+	{
+		/*store the remainder of the linebreak and keep the original line
+		as how it is*/
+		line = prev_line;
+		concatenated_line = ft_strnotchr(concatenated_line, '\n');
+		if (!concatenated_line)
+			return (NULL);
+		return (ft_strdup(concatenated_line));
 	}
-	else{
-		//return the remainder of the buff and update the line.
+	//not right with this logic, think a little bit more hard!!!.
+	if (linebreak_diff < 0){
+		/*return null to the remainder buffer and update the line
+		without the line breaker.*/
+		line[line_length - 1] == '\0';
+		return (NULL);
 	}
-	
+	ft_strnotchr(concatenated_line, '\n');
+	// return the remainder of the buff after the line break
+	// and update the line.
+
+
+
 }
 
 int get_next_line(const int fd, char **line)
@@ -159,12 +143,13 @@ int get_next_line(const int fd, char **line)
 		}
 		if (readed_bytes == -1)
 			return (-1);
-		if(!readed_bytes && !stored_buff[fd])
+		if (!readed_bytes && !stored_buff[fd])
 			return (0);
 		return (1);
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
 	int fd;
 	char *line = NULL;
 
