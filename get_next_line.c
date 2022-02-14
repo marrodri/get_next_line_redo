@@ -95,6 +95,17 @@ char *get_remaining_buff(char *buff,int readed_bytes, char *linebreak_pointer){
 }
 
 
+char *set_newline(char *buff, char **line){
+	//TODO: pseudocode.
+	// first concatenate the buff with the line.
+
+	//then with the newly concatenated line, iterate to check where
+	// to trim and return the remaining buff of the string, after the linebreak.
+
+	//if the string starts with a newline, keep the previous line as how it is,
+	// and just return the remainder of the buff.
+}
+
 int get_next_line(const int fd, char **line)
 {
 		int			readed_bytes;
@@ -127,7 +138,7 @@ int get_next_line(const int fd, char **line)
 		}
 		if (readed_bytes == -1)
 			return (-1);
-		if(!readed_bytes)
+		if(!readed_bytes && !stored_buff[fd])
 			return (0);
 		return (1);
 }
