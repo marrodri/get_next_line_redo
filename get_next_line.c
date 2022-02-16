@@ -63,16 +63,7 @@ char *ft_strnotchr(const char *s, int c){
 	return (NULL);
 }
 
-/*
-TODO: pseudocode.
-first concatenate the buff with the line.
-
-then with the newly concatenated line, iterate to check where
-to trim and return the remaining buff of the string, after the linebreak.
-
-if the string starts with a newline, keep the previous line as how it is,
-and just return the remainder of the buff.
-*/	
+	
 char *set_newline(char *buff, char **line)
 {
 	char	*remainder_buff;
@@ -84,6 +75,7 @@ char *set_newline(char *buff, char **line)
 
 	remainder_buff = NULL;
 	linebreak_pointer = NULL;
+	//TODO: this function is called first, without initializing the line.
 	prev_line = ft_strdup(*line);
 	concatenate_readed_buff(line, buff);
 	concatenated_line = *line;
@@ -116,16 +108,13 @@ char *set_newline(char *buff, char **line)
 		line[0][line_length - 1] = '\0';
 		return (NULL);
 	}
-	// return the remainder of the buff after the line break
-	// and update the line.
+	/* return the remainder of the buff after the line break
+	and update the line.*/
 	free(prev_line);
 	remainder_buff = ft_strnotchr(linebreak_pointer, '\n');
 	remainder_buff = ft_strdup(remainder_buff);
 	*linebreak_pointer = '\0';
 	return (remainder_buff);
-
-
-
 }
 
 int get_next_line(const int fd, char **line)
@@ -136,17 +125,21 @@ int get_next_line(const int fd, char **line)
 
 		readed_bytes = read(fd, buff, BUFF_SIZE);
 		buff[readed_bytes] = '\0';
-		if(stored_buff[fd]){
+		//the stored_buff can be moved to the moved to the buff variable
+		if (stored_buff[fd])
+		{
 			*line = ft_strdup(stored_buff[fd]);
 			free(stored_buff[fd]);
 			stored_buff[fd] = NULL;
 		}
-		while (readed_bytes > 0) {
+		while (readed_bytes > 0) 
+		{
 			if (ft_strchr(buff, '\n')) {
 				stored_buff[fd] = set_newline(buff, line);
-				printf("break\n");
 				break ;
 			}
+			//concatenate_line can be called once at the beggining of each
+			//iteration.
 			concatenate_readed_buff(line, buff);
 			readed_bytes = read(fd, buff, BUFF_SIZE);
 			buff[readed_bytes] = '\0';
