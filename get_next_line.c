@@ -141,7 +141,7 @@ int get_next_line(const int fd, char **line)
 			free(stored_buff[fd]);
 			stored_buff[fd] = NULL;
 		}
-		while (readed_bytes > 0) {
+		while (readed_bytes > 0 ) {
 			if (ft_strchr(buff, '\n')) {
 				stored_buff[fd] = set_newline(buff, line);
 				printf("break\n");
