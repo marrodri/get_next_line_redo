@@ -30,7 +30,8 @@ void concatenate_readed_buff(char **new_line, char *buff){
 	char *tmp_line;
 	char *concatenated_str;
 	
-	if(!*new_line){
+	if (!*new_line)
+	{
 		*new_line = ft_strdup(buff);
 		return ;
 	}
@@ -86,11 +87,13 @@ char *set_newline(char *buff, char **line)
 	prev_line = ft_strdup(*line);
 	concatenate_readed_buff(line, buff);
 	concatenated_line = *line;
-	// line_length = ft_strlen(concatenated_line);
+	line_length = ft_strlen(concatenated_line);
 	linebreak_pointer = ft_strchr(concatenated_line, '\n');
-	if (!linebreak_pointer)
-		return (concatenated_line);
-	linebreak_diff =  linebreak_pointer - concatenated_line;
+	if (!linebreak_pointer){
+		free(prev_line);
+		return (NULL);
+	}
+	linebreak_diff = linebreak_pointer - concatenated_line;
 	line_length = ft_strlen(concatenated_line);
 	printf("linebreak_diff |%d|\n", linebreak_diff);
 	if(linebreak_diff == 0)
@@ -99,8 +102,9 @@ char *set_newline(char *buff, char **line)
 		as how it is*/
 		*line = prev_line;
 		concatenated_line = ft_strnotchr(concatenated_line, '\n');
-		free(concatenated_line);
+
 		remainder_buff = ft_strdup(concatenated_line);
+		free(concatenated_line);
 		if (!remainder_buff)
 			return (NULL);
 		return (remainder_buff);
@@ -108,17 +112,16 @@ char *set_newline(char *buff, char **line)
 	if (linebreak_diff == (line_length - 1)){
 		/*return null to the remainder buffer and update the line
 		without the line breaker.*/
+		free(prev_line);
 		line[0][line_length - 1] = '\0';
 		return (NULL);
 	}
 	// return the remainder of the buff after the line break
 	// and update the line.
-
-	//first, set 
-	// linebreak_pointer = ft_strchr(concatenated_line, '\n');
+	free(prev_line);
 	remainder_buff = ft_strnotchr(linebreak_pointer, '\n');
 	remainder_buff = ft_strdup(remainder_buff);
-	linebreak_pointer = "\0";
+	*linebreak_pointer = '\0';
 	return (remainder_buff);
 
 
@@ -163,9 +166,9 @@ int main(int argc, char **argv)
 	fd = open(argv[1], O_RDONLY);
 	get_next_line(fd,&line);
 	printf("1 main |%s|\n", line);
-	// free(line);
+	free(line);
 	get_next_line(fd,&line);
 	printf("2 main |%s|\n", line);
-	// free(line);
+	free(line);
 	return (0);
 }
