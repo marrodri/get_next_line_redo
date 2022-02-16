@@ -88,10 +88,10 @@ char *set_newline(char *buff, char **line)
 	concatenated_line = *line;
 	// line_length = ft_strlen(concatenated_line);
 	linebreak_pointer = ft_strchr(concatenated_line, '\n');
-	if(!linebreak_pointer){
+	if (!linebreak_pointer)
 		return (concatenated_line);
-	}
 	linebreak_diff =  linebreak_pointer - concatenated_line;
+	line_length = ft_strlen(concatenated_line);
 	printf("linebreak_diff |%d|\n", linebreak_diff);
 	if(linebreak_diff == 0)
 	{
@@ -105,10 +105,10 @@ char *set_newline(char *buff, char **line)
 			return (NULL);
 		return (remainder_buff);
 	}
-	if (linebreak_diff == (ft_strlen(concatenated_line) - 1)){
+	if (linebreak_diff == (line_length - 1)){
 		/*return null to the remainder buffer and update the line
 		without the line breaker.*/
-		line[line_length - 1] = "\0";
+		line[0][line_length - 1] = '\0';
 		return (NULL);
 	}
 	// return the remainder of the buff after the line break
