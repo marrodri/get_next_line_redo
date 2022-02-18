@@ -88,6 +88,8 @@ char *set_newline(char **line, char *buff)
 		
 		//move the buff pointer to where the first non linebreak character is
 		buff = ft_strnotchr(buff, '\n');
+		if (!buff)
+			return (NULL);
 		remainder_buff = ft_strdup(buff);
 
 		if (!remainder_buff)
@@ -119,13 +121,12 @@ int get_next_line(const int fd, char **line)
 		char		buff[BUFF_SIZE + 1];
 		static char	*stored_buff[128];
 		char		*concatenated_line;
-		char		*prev_line;
+		char		*new_line;
 
-		if(*line)
-			prev_line = ft_strdup(*line);
+		
 		readed_bytes = read(fd, buff, BUFF_SIZE);
 		buff[readed_bytes] = '\0';
-		*line = NULL;
+		new_line = NULL;
 		concatenated_line = NULL;
 		//the stored_buff can be moved to the buff variable
 		if (stored_buff[fd])
@@ -135,19 +136,24 @@ int get_next_line(const int fd, char **line)
 			stored_buff[fd] = NULL;
 		}
 		concatenate_readed_buff(&concatenated_line, buff);
-		while ((readed_bytes > 0 || concatenated_line) && !*line)
+		while ((readed_bytes > 0 || concatenated_line) && !new_line)
 		{
-			readed_bytes = read(fd, buff, BUFF_SIZE);
-			buff[readed_bytes] = '\0';
-			concatenate_readed_buff(&concatenated_line, buff);
 			if (ft_strchr(concatenated_line, '\n') || !readed_bytes) {
-				stored_buff[fd] = set_newline(line, concatenated_line);
-				if(!*line)
-					*line = prev_line;
+				stored_buff[fd] = set_newline(&new_line, concatenated_line);
+				
+				if(new_line)
+					*line = new_line;
+				// else{
+				// 	new_line = *line;
+				// }
+				
 				// free(concatenated_line);
 				concatenated_line = NULL;
 				// break ;
 			}
+			readed_bytes = read(fd, buff, BUFF_SIZE);
+			buff[readed_bytes] = '\0';
+			concatenate_readed_buff(&concatenated_line, buff);
 			//concatenate_line can be called once at the beggining of each
 			//iteration.
 		}
@@ -167,8 +173,12 @@ int main(int argc, char **argv)
 	get_next_line(fd,&line);
 	printf("1 main |%s|\n", line);
 	free(line);
+	line = NULL;
 	get_next_line(fd,&line);
 	printf("2 main |%s|\n", line);
+	// free(line);
+	get_next_line(fd,&line);
+	printf("3 main |%s|\n", line);
 	free(line);
 	return (0);
 }
