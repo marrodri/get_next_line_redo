@@ -64,27 +64,23 @@ char *ft_strnotchr(const char *s, int c){
 }
 
 	
-char *set_newline(char *buff, char **line)
+char *set_newline(char **line, char *buff)
 {
 	char	*remainder_buff;
 	char	*linebreak_pointer;
 	int		line_length;
 	int		linebreak_diff;
-	char	*prev_line;
 	char 	*concatenated_line;
 
 	remainder_buff = NULL;
 	linebreak_pointer = NULL;
 	//TODO: this function is called first, without initializing the line.
-	prev_line = ft_strdup(*line);
-	concatenate_readed_buff(line, buff);
-	concatenated_line = *line;
+	
+	// concatenate_readed_buff(line, buff);
+	// concatenated_line = by;
+	
 	line_length = ft_strlen(concatenated_line);
 	linebreak_pointer = ft_strchr(concatenated_line, '\n');
-	if (!linebreak_pointer){
-		free(prev_line);
-		return (NULL);
-	}
 	linebreak_diff = linebreak_pointer - concatenated_line;
 	line_length = ft_strlen(concatenated_line);
 	printf("linebreak_diff |%d|\n", linebreak_diff);
@@ -92,7 +88,7 @@ char *set_newline(char *buff, char **line)
 	{
 		/*store the remainder of the linebreak and keep the original line
 		as how it is*/
-		*line = prev_line;
+		*line = NULL;
 		concatenated_line = ft_strnotchr(concatenated_line, '\n');
 
 		remainder_buff = ft_strdup(concatenated_line);
@@ -104,13 +100,13 @@ char *set_newline(char *buff, char **line)
 	if (linebreak_diff == (line_length - 1)){
 		/*return null to the remainder buffer and update the line
 		without the line breaker.*/
-		free(prev_line);
+		// free(prev_line);
 		line[0][line_length - 1] = '\0';
 		return (NULL);
 	}
 	/* return the remainder of the buff after the line break
 	and update the line.*/
-	free(prev_line);
+	// free(prev_line);
 	remainder_buff = ft_strnotchr(linebreak_pointer, '\n');
 	remainder_buff = ft_strdup(remainder_buff);
 	*linebreak_pointer = '\0';
@@ -122,31 +118,36 @@ int get_next_line(const int fd, char **line)
 		int			readed_bytes;
 		char		buff[BUFF_SIZE + 1];
 		static char	*stored_buff[128];
+		char		*concatenated_line;
+		char		*prev_line;
 
+		prev_line = ft_strdup(*line);
 		readed_bytes = read(fd, buff, BUFF_SIZE);
 		buff[readed_bytes] = '\0';
-		//the stored_buff can be moved to the moved to the buff variable
+		*line = NULL;
+		//the stored_buff can be moved to the buff variable
 		if (stored_buff[fd])
 		{
-			*line = ft_strdup(stored_buff[fd]);
+			concatenated_line = ft_strdup(stored_buff[fd]);
 			free(stored_buff[fd]);
 			stored_buff[fd] = NULL;
 		}
-<<<<<<< HEAD
-		while (readed_bytes > 0) 
+		concatenate_readed_buff(&concatenated_line, buff);
+		while (readed_bytes > 0 || concatenated_line)
 		{
-=======
-		while (readed_bytes > 0 ) {
->>>>>>> 219566bc8e49e12ccc7e10dbeb2ea13498aab424
-			if (ft_strchr(buff, '\n')) {
-				stored_buff[fd] = set_newline(buff, line);
+			if (ft_strchr(concatenated_line, '\n')) {
+				stored_buff[fd] = set_newline(line, concatenated_line);
+				if(!*line)
+					*line = prev_line;
+				free(concatenated_line);
+				concatenated_line = NULL;
 				break ;
 			}
 			//concatenate_line can be called once at the beggining of each
 			//iteration.
-			concatenate_readed_buff(line, buff);
 			readed_bytes = read(fd, buff, BUFF_SIZE);
 			buff[readed_bytes] = '\0';
+			concatenate_readed_buff(&concatenated_line, buff);
 		}
 		if (readed_bytes == -1)
 			return (-1);
