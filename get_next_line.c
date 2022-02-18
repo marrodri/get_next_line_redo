@@ -26,19 +26,17 @@ the same FD.
 #include <sys/types.h>
 #include <sys/stat.h>
 
-void concatenate_readed_buff(char **new_line, char *buff){
-	char *tmp_line;
-	char *concatenated_str;
+void concatenate_readed_buff(char **curr_buff, char *new_buff){
+	char *concatenated_buff;
 	
-	if (!*new_line)
+	if (!*curr_buff)
 	{
-		*new_line = ft_strdup(buff);
+		*curr_buff = ft_strdup(new_buff);
 		return ;
 	}
-	tmp_line = *new_line;
-	concatenated_str = ft_strjoin(*new_line, buff);
-	free(tmp_line);
-	*new_line = concatenated_str;
+	concatenated_buff = ft_strjoin(*curr_buff, new_buff);
+	free(*curr_buff);
+	*curr_buff = concatenated_buff;
 }
 
 int ft_strissame(char *str, int c){
@@ -70,29 +68,28 @@ char *set_newline(char **line, char *buff)
 	char	*linebreak_pointer;
 	int		line_length;
 	int		linebreak_diff;
-	char 	*concatenated_line;
 
 	remainder_buff = NULL;
 	linebreak_pointer = NULL;
 	//TODO: this function is called first, without initializing the line.
-	
-	// concatenate_readed_buff(line, buff);
-	// concatenated_line = by;
-	
-	line_length = ft_strlen(concatenated_line);
-	linebreak_pointer = ft_strchr(concatenated_line, '\n');
-	linebreak_diff = linebreak_pointer - concatenated_line;
-	line_length = ft_strlen(concatenated_line);
+
+	line_length = ft_strlen(buff);
+	linebreak_pointer = ft_strchr(buff, '\n');
+	if(!linebreak_pointer){
+		*line = ft_strdup(buff);
+		return (NULL);
+	}
+	linebreak_diff = linebreak_pointer - buff;
 	printf("linebreak_diff |%d|\n", linebreak_diff);
 	if(linebreak_diff == 0)
 	{
 		/*store the remainder of the linebreak and keep the original line
 		as how it is*/
-		*line = NULL;
-		concatenated_line = ft_strnotchr(concatenated_line, '\n');
+		
+		//move the buff pointer to where the first non linebreak character is
+		buff = ft_strnotchr(buff, '\n');
+		remainder_buff = ft_strdup(buff);
 
-		remainder_buff = ft_strdup(concatenated_line);
-		free(concatenated_line);
 		if (!remainder_buff)
 			return (NULL);
 		return (remainder_buff);
@@ -100,13 +97,16 @@ char *set_newline(char **line, char *buff)
 	if (linebreak_diff == (line_length - 1)){
 		/*return null to the remainder buffer and update the line
 		without the line breaker.*/
-		// free(prev_line);
-		line[0][line_length - 1] = '\0';
+
+		//this shows that the linebreak is only located at the end of the buff,
+		// iterate from the end of it so it can trim
+		*line = ft_strtrim(buff, "\n");
 		return (NULL);
 	}
 	/* return the remainder of the buff after the line break
 	and update the line.*/
 	// free(prev_line);
+	*line = buff;
 	remainder_buff = ft_strnotchr(linebreak_pointer, '\n');
 	remainder_buff = ft_strdup(remainder_buff);
 	*linebreak_pointer = '\0';
@@ -121,10 +121,12 @@ int get_next_line(const int fd, char **line)
 		char		*concatenated_line;
 		char		*prev_line;
 
-		prev_line = ft_strdup(*line);
+		if(*line)
+			prev_line = ft_strdup(*line);
 		readed_bytes = read(fd, buff, BUFF_SIZE);
 		buff[readed_bytes] = '\0';
 		*line = NULL;
+		concatenated_line = NULL;
 		//the stored_buff can be moved to the buff variable
 		if (stored_buff[fd])
 		{
@@ -133,21 +135,21 @@ int get_next_line(const int fd, char **line)
 			stored_buff[fd] = NULL;
 		}
 		concatenate_readed_buff(&concatenated_line, buff);
-		while (readed_bytes > 0 || concatenated_line)
+		while ((readed_bytes > 0 || concatenated_line) && !*line)
 		{
-			if (ft_strchr(concatenated_line, '\n')) {
-				stored_buff[fd] = set_newline(line, concatenated_line);
-				if(!*line)
-					*line = prev_line;
-				free(concatenated_line);
-				concatenated_line = NULL;
-				break ;
-			}
-			//concatenate_line can be called once at the beggining of each
-			//iteration.
 			readed_bytes = read(fd, buff, BUFF_SIZE);
 			buff[readed_bytes] = '\0';
 			concatenate_readed_buff(&concatenated_line, buff);
+			if (ft_strchr(concatenated_line, '\n') || !readed_bytes) {
+				stored_buff[fd] = set_newline(line, concatenated_line);
+				if(!*line)
+					*line = prev_line;
+				// free(concatenated_line);
+				concatenated_line = NULL;
+				// break ;
+			}
+			//concatenate_line can be called once at the beggining of each
+			//iteration.
 		}
 		if (readed_bytes == -1)
 			return (-1);
